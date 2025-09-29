@@ -1,0 +1,213 @@
+import time
+import os
+import pandas as pd
+import streamlit as st
+
+# 功能 1~4 导入
+from utils.gene_info import fetch_gene_info, translate_description
+from utils.sequence_fetcher import fetch_cdna_and_cds
+from utils.fasta_utils import parse_fasta
+from utils.blast_utils import submit_blast, get_blast_result
+from utils.fielder_promoter import fetch_promoter_sequences
+
+# 新功能: 中国春启动子抓取
+from utils.promoter_fetcher import (
+    fetch_gene_info_wheatomics,
+    build_query_list,
+    fetch_promoters_from_wheatomics,
+    format_fasta
+)
+
+# -------------------- 工具函数 --------------------
+def read_gene_ids(uploaded_file, manual_input):
+    if uploaded_file:
+        return uploaded_file.read().decode("utf-8").splitlines()
+    elif manual_input.strip():
+        return manual_input.strip().splitlines()
+    else:
+        return []
+
+# -------------------- 主程序 --------------------
+def main():
+    st.set_page_config(page_title="🌾 小麦基因批量处理工具", layout="wide")
+    st.title("🌾 小麦基因批量处理工具")
+
+    tool = st.sidebar.radio(
+        "选择功能，初次使用请阅读ReadMe",
+        [
+            "ReadMe",
+            "基因功能注释及三代基因号转换",
+            "基因cDNA & CDS 下载",
+            "中国春 → Fielder 同源基因",
+            "Fielder 基因 → 启动子序列",
+            "中国春启动子抓取"
+        ]
+    )   
+
+    # -------------------- ReadMe --------------------
+    if tool == "ReadMe":
+        st.header("📖 小麦基因批量处理工具 - 使用说明")
+        st.markdown("""
+        本网站基于WheatOmics开发，网址：http://wheatomics.sdau.edu.cn/
+        **功能说明：**
+        1. **基因功能注释及三代基因号转换**  
+           因为是基于wheatomics，所以基因号不要加“ .1”。
+
+        2. **基因 cDNA & CDS 下载**  
+           上传基因号 TXT 文件（这个加不加.1无所谓），原理是基于wheatomics的GetSequence功能，可下载 cDNA 序列和 CDS 序列。
+
+        3. **中国春 → Fielder 同源基因**  
+           提交 CDS 序列 BLAST，可获取 Fielder 同源基因号。
+
+        4. **Fielder 基因 → 启动子序列**  
+           原理为：由基因号获取基因所在坐标，然后上溯2000bp，已考虑+-链问题，所得序列方向为：设TSS为0，从左到右为-2000到-1。
+
+        **免责声明：**  
+        - 请仔细核对网站结果，虽然是基于算法应该具有普适性，但是不排除代码出错
+
+        **开发人员：**
+        2303wyz；github：songofdawn（项目已开源）
+        """)
+        st.info("📌 请从左侧选择功能开始使用")
+        return
+
+    # -------------------- 功能 1 --------------------
+    if tool == "基因功能注释及三代基因号转换":
+        st.header("🔍 基因功能注释")
+        uploaded_file = st.file_uploader(
+            "上传 TXT 文件（基因号一行一个，不要加“.1”）",
+            type=["txt"], key="file_gene_info"
+        )
+        manual_input = st.text_area("或者手动输入基因号（每行一个）", key="input_gene_info")
+        gene_ids = read_gene_ids(uploaded_file, manual_input)
+        if not gene_ids:
+            st.info("请上传文件或输入基因号")
+            st.stop()
+        if st.button("开始查询", key="btn_gene_info"):
+            results, progress, status_text = [], st.progress(0), st.empty()
+            for idx, gene_id in enumerate(gene_ids, 1):
+                status_text.text(f"正在查询: {gene_id} ({idx}/{len(gene_ids)})")
+                third_id, desc_en = fetch_gene_info(gene_id.strip())
+                desc_zh = translate_description(desc_en)
+                results.append([gene_id.strip(), third_id, desc_en, desc_zh])
+                progress.progress(idx / len(gene_ids))
+            df = pd.DataFrame(results, columns=["输入基因号", "三代基因号", "功能描述（英文）", "功能描述（中文）"])
+            st.success("✅ 查询完成！")
+            st.dataframe(df, use_container_width=True)
+            st.download_button("📥 下载结果 CSV", df.to_csv(index=False).encode("utf-8-sig"), "gene_info.csv", "text/csv")
+            status_text.empty()
+
+    # -------------------- 功能 2 --------------------
+    elif tool == "基因cDNA & CDS 下载":
+        st.header("📍 cDNA & CDS 下载")
+        uploaded_file = st.file_uploader("上传 TXT 文件（基因号）", type=["txt"], key="file_sequences")
+        manual_input = st.text_area("或者手动输入基因号（每行一个）", key="input_sequences")
+        gene_ids = read_gene_ids(uploaded_file, manual_input)
+        if not gene_ids:
+            st.info("请上传文件或输入基因号")
+            st.stop()
+        if st.button("获取 cDNA 和 CDS", key="btn_sequences"):
+            cdna_records, cds_records, failed_genes = [], [], []
+            progress, status_text = st.progress(0), st.empty()
+            for idx, gene_id in enumerate(gene_ids, 1):
+                status_text.text(f"正在处理: {gene_id} ({idx}/{len(gene_ids)})")
+                cdna_seq, cds_seq = fetch_cdna_and_cds(gene_id.strip())
+                if cdna_seq == "NA":
+                    cdna_records.append(f">{gene_id}\nNA\n")
+                    cds_records.append(f">{gene_id}\nNA\n")
+                    failed_genes.append(gene_id)
+                else:
+                    cdna_records.append(f">{gene_id}\n{cdna_seq}\n")
+                    cds_records.append(f">{gene_id}\n{cds_seq}\n")
+                progress.progress(idx / len(gene_ids))
+            st.download_button("📥 下载 cDNA TXT", "\n".join(cdna_records), "cdna_sequences.txt", "text/plain")
+            st.download_button("📥 下载 CDS TXT", "\n".join(cds_records), "cds_sequences.txt", "text/plain")
+            if failed_genes:
+                st.warning(f"⚠️ 以下基因未获取到序列: {', '.join(failed_genes)}")
+            status_text.empty()
+
+    # -------------------- 功能 3 --------------------
+    elif tool == "中国春 → Fielder 同源基因":
+        st.header("🧬 中国春基因号 → Fielder 同源基因 (BLAST)")
+        uploaded_file = st.file_uploader("上传 CDS FASTA 或 TXT 文件", type=["fasta", "fa", "txt"], key="file_blast")
+        if not uploaded_file:
+            st.info("请上传文件")
+            st.stop()
+        fasta_str = uploaded_file.read().decode("utf-8")
+        seq_records = parse_fasta(fasta_str)
+        st.info(f"解析到 {len(seq_records)} 条序列")
+        if st.button("开始 BLAST", key="btn_blast"):
+            results, progress, status_text = [], st.progress(0), st.empty()
+            for idx, (name, seq) in enumerate(seq_records, 1):
+                status_text.text(f"正在提交 BLAST: {name} ({idx}/{len(seq_records)})")
+                jobid = submit_blast(seq)
+                gene_id = get_blast_result(jobid) if jobid else "提交失败"
+                results.append([name, gene_id if gene_id else "未找到"])
+                progress.progress(idx / len(seq_records))
+                time.sleep(1)
+            df = pd.DataFrame(results, columns=["中国春基因", "Fielder 同源基因"])
+            st.success("✅ BLAST 完成！")
+            st.dataframe(df, use_container_width=True)
+            st.download_button("📥 下载结果 CSV", df.to_csv(index=False).encode("utf-8-sig"), "fielder_homologs.csv", "text/csv")
+            status_text.empty()
+
+    # -------------------- 功能 4 --------------------
+    elif tool == "Fielder 基因 → 启动子序列":
+        st.header("🌱 Fielder 基因 → 启动子序列抓取")
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        gff_path_default = os.path.join(BASE_DIR, "data", "Fielder.gff")
+        st.info(f"(用户请忽略）请确保 GFF 文件已放在: {gff_path_default}")
+        uploaded_file = st.file_uploader("上传基因列表 TXT 文件", type=["txt"], key="file_promoter")
+        if uploaded_file:
+            gene_ids = [g.strip() for g in uploaded_file.read().decode("utf-8").splitlines() if g.strip()]
+        else:
+            st.info("请上传 TXT 文件")
+            st.stop()
+        if st.button("抓取启动子序列", key="btn_promoter"):
+            if not os.path.exists(gff_path_default):
+                st.error(f"GFF 文件不存在")
+                st.stop()
+            progress, status_text = st.progress(0), st.empty()
+            txt_lines = []
+            for idx, gene_id in enumerate(gene_ids, 1):
+                status_text.text(f"正在抓取启动子: {gene_id} ({idx}/{len(gene_ids)})")
+                seq_txt = fetch_promoter_sequences([gene_id], gff_path_default)
+                txt_lines.append(seq_txt)
+                progress.progress(idx / len(gene_ids))
+            st.download_button("📥 下载启动子 TXT", "\n".join(txt_lines), "promoter_sequences.txt", "text/plain")
+            st.success("✅ 启动子抓取完成")
+            status_text.empty()
+
+    # -------------------- 功能 5 --------------------
+    elif tool == "中国春启动子抓取":
+        st.header("🌱 中国春基因启动子抓取")
+        uploaded_file = st.file_uploader("上传基因列表 TXT 文件，一行一个基因号", type=["txt"], key="file_cs_promoter")
+        upstream_len = st.number_input("上游长度(bp)", min_value=100, max_value=5000, value=2000, step=100)
+        if uploaded_file:
+            gene_ids = [g.strip() for g in uploaded_file.read().decode("utf-8").splitlines() if g.strip()]
+            st.info(f"检测到 {len(gene_ids)} 个基因号")
+            if st.button("开始抓取", key="btn_cs_promoter"):
+                progress, status_text = st.progress(0), st.empty()
+                gene_infos = []
+                # 获取每个基因坐标并显示进度
+                for idx, gene in enumerate(gene_ids, 1):
+                    status_text.text(f"获取坐标: {gene} ({idx}/{len(gene_ids)})")
+                    gene_infos.append(fetch_gene_info_wheatomics(gene))
+                    progress.progress(idx / len(gene_ids))
+                # 构建查询
+                queries, gene_info_list = build_query_list(gene_infos, upstream_len)
+                st.success(f"✅ 构建完成 {len(queries)} 个查询坐标")
+                # 抓取序列并显示进度
+                fasta_records = []
+                for idx, query in enumerate(queries, 1):
+                    status_text.text(f"抓取启动子序列: {idx}/{len(queries)}")
+                    fasta_text = fetch_promoters_from_wheatomics([query])
+                    fasta_records.extend(format_fasta(fasta_text, [gene_info_list[idx-1]]))
+                    progress.progress(idx / len(queries))
+                st.download_button("📥 下载启动子序列", "\n".join(fasta_records), "cs_promoter_sequences.txt", "text/plain")
+                st.success("🎉 启动子抓取完成！")
+                status_text.empty()
+
+
+if __name__ == "__main__":
+    main()

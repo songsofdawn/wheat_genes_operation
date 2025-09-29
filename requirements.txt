@@ -1,0 +1,5 @@
+streamlit
+requests
+requests_toolbelt
+beautifulsoup4
+pandas
