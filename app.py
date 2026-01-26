@@ -66,7 +66,7 @@ def main():
         - 请仔细核对网站结果，虽然是基于算法应该具有普适性，但是不排除代码出错
 
         **开发人员：**
-        2303wyz；github：songofdawn（项目已开源）
+        NWAFU科研楼2303wyz；GitHub：songofdawn（项目已开源）
         """)
         st.info("📌 请从左侧选择功能开始使用")
         return
