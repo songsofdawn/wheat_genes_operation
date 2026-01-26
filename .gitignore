@@ -1,1 +1,3 @@
 data/Fielder.gff
+__pycache__/
+*.pyc
