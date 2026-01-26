@@ -72,7 +72,7 @@ def fetch_promoters_from_wheatomics(queries):
         "Content-Type": "application/x-www-form-urlencoded"
     }
     data = {
-        "database": "all_genomes",
+        "database": "Chinese_Spring1.0.genome",
         "ID": "\n".join(queries)
     }
     response = requests.post(BASE_URL_FASTA, headers=headers, data=data, timeout=20)

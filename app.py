@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 
 # 功能 1~4 导入
-from utils.gene_info import fetch_gene_info, translate_description
+from utils.gene_info import fetch_gene_info, translate_description, batch_process_gene_info
 from utils.sequence_fetcher import fetch_cdna_and_cds
 from utils.fasta_utils import parse_fasta
 from utils.blast_utils import submit_blast, get_blast_result
@@ -73,29 +73,42 @@ def main():
 
     # -------------------- 功能 1 --------------------
     if tool == "基因功能注释及三代基因号转换":
-        st.header("🔍 基因功能注释")
-        uploaded_file = st.file_uploader(
-            "上传 TXT 文件（基因号一行一个，不要加“.1”）",
-            type=["txt"], key="file_gene_info"
-        )
-        manual_input = st.text_area("或者手动输入基因号（每行一个）", key="input_gene_info")
-        gene_ids = read_gene_ids(uploaded_file, manual_input)
-        if not gene_ids:
-            st.info("请上传文件或输入基因号")
-            st.stop()
-        if st.button("开始查询", key="btn_gene_info"):
-            results, progress, status_text = [], st.progress(0), st.empty()
-            for idx, gene_id in enumerate(gene_ids, 1):
-                status_text.text(f"正在查询: {gene_id} ({idx}/{len(gene_ids)})")
-                third_id, desc_en = fetch_gene_info(gene_id.strip())
-                desc_zh = translate_description(desc_en)
-                results.append([gene_id.strip(), third_id, desc_en, desc_zh])
-                progress.progress(idx / len(gene_ids))
-            df = pd.DataFrame(results, columns=["输入基因号", "三代基因号", "功能描述（英文）", "功能描述（中文）"])
-            st.success("✅ 查询完成！")
-            st.dataframe(df, use_container_width=True)
-            st.download_button("📥 下载结果 CSV", df.to_csv(index=False).encode("utf-8-sig"), "gene_info.csv", "text/csv")
-            status_text.empty()
+            st.header("🔍 基因功能注释 (多线程加速版)")
+            uploaded_file = st.file_uploader(
+                "上传 TXT 文件（基因号一行一个，不要加“.1”）",
+                type=["txt"], key="file_gene_info"
+            )
+            manual_input = st.text_area("或者手动输入基因号（每行一个）", key="input_gene_info")
+            
+            gene_ids = read_gene_ids(uploaded_file, manual_input)
+            gene_ids = [g.strip() for g in gene_ids if g.strip()] 
+
+            if not gene_ids:
+                st.info("请上传文件或输入基因号")
+                st.stop()
+
+            if st.button("开始高速查询", key="btn_gene_info"):
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+
+                def update_ui(current_progress, text):
+                    progress_bar.progress(current_progress)
+                    status_text.text(text)
+
+                # 调用新的批量处理函数
+                results = batch_process_gene_info(
+                    gene_ids, 
+                    max_workers=10, 
+                    progress_callback=update_ui
+                )
+
+                df = pd.DataFrame(results, columns=["输入基因号", "三代基因号", "功能描述（英文）", "功能描述（中文）"])
+                st.success("✅ 查询完成！")
+                st.dataframe(df, use_container_width=True)
+                st.download_button("📥 下载结果 CSV", df.to_csv(index=False).encode("utf-8-sig"), "gene_info.csv", "text/csv")
+                
+                status_text.empty()
+                progress_bar.empty()
 
     # -------------------- 功能 2 --------------------
     elif tool == "基因cDNA & CDS 下载":
@@ -126,16 +139,40 @@ def main():
                 st.warning(f"⚠️ 以下基因未获取到序列: {', '.join(failed_genes)}")
             status_text.empty()
 
-    # -------------------- 功能 3 --------------------
+# -------------------- 功能 3 --------------------
     elif tool == "中国春 → Fielder 同源基因":
         st.header("🧬 中国春基因号 → Fielder 同源基因 (BLAST)")
-        uploaded_file = st.file_uploader("上传 CDS FASTA 或 TXT 文件", type=["fasta", "fa", "txt"], key="file_blast")
-        if not uploaded_file:
-            st.info("请上传文件")
+        
+        # 1. 文件上传
+        uploaded_file = st.file_uploader(
+            "上传 CDS FASTA 或 TXT 文件", 
+            type=["fasta", "fa", "txt"], 
+            key="file_blast"
+        )
+        
+        # 2. 文本输入（现在直接在下方）
+        manual_input = st.text_area(
+            "或者手动输入序列 (FASTA格式)", 
+            height=200, 
+            key="input_blast",
+            placeholder=">GeneID\nATGC..."
+        )
+
+        # 整合输入源逻辑
+        fasta_str = ""
+        if uploaded_file:
+            fasta_str = uploaded_file.read().decode("utf-8")
+        elif manual_input.strip():
+            fasta_str = manual_input.strip()
+
+        if not fasta_str:
+            st.info("💡 请上传文件或在上方输入框粘贴序列")
             st.stop()
-        fasta_str = uploaded_file.read().decode("utf-8")
+
+        # 解析序列
         seq_records = parse_fasta(fasta_str)
-        st.info(f"解析到 {len(seq_records)} 条序列")
+        st.info(f"已解析到 {len(seq_records)} 条序列")
+        
         if st.button("开始 BLAST", key="btn_blast"):
             results, progress, status_text = [], st.progress(0), st.empty()
             for idx, (name, seq) in enumerate(seq_records, 1):
@@ -143,70 +180,95 @@ def main():
                 jobid = submit_blast(seq)
                 gene_id = get_blast_result(jobid) if jobid else "提交失败"
                 results.append([name, gene_id if gene_id else "未找到"])
+                
+                # 更新进度
                 progress.progress(idx / len(seq_records))
-                time.sleep(1)
+                # 适当延时防止被服务器屏蔽
+                time.sleep(1) 
+            
             df = pd.DataFrame(results, columns=["中国春基因", "Fielder 同源基因"])
             st.success("✅ BLAST 完成！")
             st.dataframe(df, use_container_width=True)
-            st.download_button("📥 下载结果 CSV", df.to_csv(index=False).encode("utf-8-sig"), "fielder_homologs.csv", "text/csv")
+            st.download_button(
+                "📥 下载结果 CSV", 
+                df.to_csv(index=False).encode("utf-8-sig"), 
+                "fielder_homologs.csv", 
+                "text/csv"
+            )
             status_text.empty()
 
-    # -------------------- 功能 4 --------------------
+ # -------------------- 功能 4 --------------------
     elif tool == "Fielder 基因 → 启动子序列":
         st.header("🌱 Fielder 基因 → 启动子序列抓取")
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        gff_path_default = os.path.join(BASE_DIR, "data", "Fielder.gff")
-        st.info(f"(用户请忽略）请确保 GFF 文件已放在: {gff_path_default}")
-        uploaded_file = st.file_uploader("上传基因列表 TXT 文件", type=["txt"], key="file_promoter")
-        if uploaded_file:
-            gene_ids = [g.strip() for g in uploaded_file.read().decode("utf-8").splitlines() if g.strip()]
-        else:
-            st.info("请上传 TXT 文件")
+        
+        uploaded_file = st.file_uploader("上传基因列表 TXT", type=["txt"], key="file_promoter")
+        manual_input = st.text_area("或者手动输入基因号（每行一个）", key="input_promoter")
+        
+        gene_ids = read_gene_ids(uploaded_file, manual_input)
+        gene_ids = [g.strip() for g in gene_ids if g.strip()]
+
+        if not gene_ids:
+            st.info("请上传文件或输入基因号")
             st.stop()
+
         if st.button("抓取启动子序列", key="btn_promoter"):
+            BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+            gff_path_default = os.path.join(BASE_DIR, "data", "Fielder.gff")
+            
             if not os.path.exists(gff_path_default):
-                st.error(f"GFF 文件不存在")
+                st.error(f"GFF 文件不存在，请检查路径: {gff_path_default}")
                 st.stop()
+
             progress, status_text = st.progress(0), st.empty()
             txt_lines = []
             for idx, gene_id in enumerate(gene_ids, 1):
-                status_text.text(f"正在抓取启动子: {gene_id} ({idx}/{len(gene_ids)})")
+                status_text.text(f"正在抓取: {gene_id} ({idx}/{len(gene_ids)})")
                 seq_txt = fetch_promoter_sequences([gene_id], gff_path_default)
                 txt_lines.append(seq_txt)
                 progress.progress(idx / len(gene_ids))
+            
             st.download_button("📥 下载启动子 TXT", "\n".join(txt_lines), "promoter_sequences.txt", "text/plain")
             st.success("✅ 启动子抓取完成")
             status_text.empty()
 
-    # -------------------- 功能 5 --------------------
+# -------------------- 功能 5 --------------------
     elif tool == "中国春启动子抓取":
         st.header("🌱 中国春基因启动子抓取")
-        uploaded_file = st.file_uploader("上传基因列表 TXT 文件，一行一个基因号", type=["txt"], key="file_cs_promoter")
+        
+        uploaded_file = st.file_uploader("上传基因列表 TXT", type=["txt"], key="file_cs_promoter")
+        manual_input = st.text_area("或者手动输入基因号（每行一个）", key="input_cs_promoter")
         upstream_len = st.number_input("上游长度(bp)", min_value=100, max_value=5000, value=2000, step=100)
-        if uploaded_file:
-            gene_ids = [g.strip() for g in uploaded_file.read().decode("utf-8").splitlines() if g.strip()]
-            st.info(f"检测到 {len(gene_ids)} 个基因号")
-            if st.button("开始抓取", key="btn_cs_promoter"):
-                progress, status_text = st.progress(0), st.empty()
-                gene_infos = []
-                # 获取每个基因坐标并显示进度
-                for idx, gene in enumerate(gene_ids, 1):
-                    status_text.text(f"获取坐标: {gene} ({idx}/{len(gene_ids)})")
-                    gene_infos.append(fetch_gene_info_wheatomics(gene))
-                    progress.progress(idx / len(gene_ids))
-                # 构建查询
-                queries, gene_info_list = build_query_list(gene_infos, upstream_len)
-                st.success(f"✅ 构建完成 {len(queries)} 个查询坐标")
-                # 抓取序列并显示进度
-                fasta_records = []
-                for idx, query in enumerate(queries, 1):
-                    status_text.text(f"抓取启动子序列: {idx}/{len(queries)}")
-                    fasta_text = fetch_promoters_from_wheatomics([query])
-                    fasta_records.extend(format_fasta(fasta_text, [gene_info_list[idx-1]]))
-                    progress.progress(idx / len(queries))
-                st.download_button("📥 下载启动子序列", "\n".join(fasta_records), "cs_promoter_sequences.txt", "text/plain")
-                st.success("🎉 启动子抓取完成！")
-                status_text.empty()
+        
+        gene_ids = read_gene_ids(uploaded_file, manual_input)
+        gene_ids = [g.strip() for g in gene_ids if g.strip()]
+
+        if not gene_ids:
+            st.info("请上传文件或输入基因号")
+            st.stop()
+
+        st.info(f"待处理基因数: {len(gene_ids)}")
+        if st.button("开始抓取", key="btn_cs_promoter"):
+            progress, status_text = st.progress(0), st.empty()
+            gene_infos = []
+            
+            # 1. 获取坐标
+            for idx, gene in enumerate(gene_ids, 1):
+                status_text.text(f"获取坐标: {gene} ({idx}/{len(gene_ids)})")
+                gene_infos.append(fetch_gene_info_wheatomics(gene))
+                progress.progress((idx / len(gene_ids)) * 0.5) # 前 50% 进度
+            
+            # 2. 构建查询并下载
+            queries, gene_info_list = build_query_list(gene_infos, upstream_len)
+            fasta_records = []
+            for idx, query in enumerate(queries, 1):
+                status_text.text(f"抓取序列: {idx}/{len(queries)}")
+                fasta_text = fetch_promoters_from_wheatomics([query])
+                fasta_records.extend(format_fasta(fasta_text, [gene_info_list[idx-1]]))
+                progress.progress(0.5 + (idx / len(queries)) * 0.5) # 后 50% 进度
+            
+            st.download_button("📥 下载启动子序列", "\n".join(fasta_records), "cs_promoter_sequences.txt", "text/plain")
+            st.success("🎉 启动子抓取完成！")
+            status_text.empty()
 
 
 if __name__ == "__main__":

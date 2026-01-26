@@ -1,5 +1,6 @@
 streamlit
+pandas
 requests
 requests_toolbelt
 beautifulsoup4
-pandas
+googletrans==4.0.0-rc1
