@@ -16,39 +16,47 @@ def extract_coordinates(gff_file, gene_ids):
     coords = []
     gene_set = set(gene_ids)
     
-    # 2. 检查文件。如果传入的是 .gff 但实际存在 .gz，则自动切换
-    if not os.path.exists(gff_file):
-        if os.path.exists(gff_file + ".gz"):
-            gff_file = gff_file + ".gz"
-        else:
-            raise FileNotFoundError(f"未找到 GFF 文件: {gff_file}")
-
-    # 3. 根据文件后缀决定使用普通 open 还是 gzip.open
-    # mode='rt' 表示以“文本模式”读取，这样你拿到的 line 依然是字符串，不需要手动 decode
-    open_func = gzip.open if gff_file.endswith('.gz') else open
+    # 1. 自动处理路径：如果传入的是 .gff 但实际是 .gz
+    actual_file = gff_file
+    if not os.path.exists(gff_file) and os.path.exists(gff_file + ".gz"):
+        actual_file = gff_file + ".gz"
     
-    with open_func(gff_file, 'rt', encoding='utf-8') as gff:
-        for line in gff:
-            if line.startswith("#") or not line.strip():
-                continue
-            parts = line.strip().split("\t")
-            if len(parts) < 9:
-                continue
-            
-            # 以下逻辑与你原来的一模一样
-            chrom, feature_type, start, end, strand, attributes = parts[0], parts[2], parts[3], parts[4], parts[6], parts[8]
-            
-            if feature_type != "mRNA":
-                continue
+    if not os.path.exists(actual_file):
+        raise FileNotFoundError(f"文件不存在: {actual_file}")
+
+    # 2. 核心修正：使用 errors='ignore' 预防编码崩溃
+    # 这样遇到无法识别的特殊字符会跳过，而不是直接报错退出
+    if actual_file.endswith('.gz'):
+        # gzip 模式下也必须指定 encoding 和 errors
+        f = gzip.open(actual_file, mode='rt', encoding='utf-8', errors='ignore')
+    else:
+        f = open(actual_file, mode='r', encoding='utf-8', errors='ignore')
+
+    try:
+        with f:
+            for line in f:
+                if line.startswith("#") or not line.strip():
+                    continue
+                parts = line.strip().split("\t")
+                if len(parts) < 9:
+                    continue
                 
-            attr_dict = dict(item.split("=") for item in attributes.split(";") if "=" in item)
-            mrna_id = attr_dict.get("ID", "")
-            
-            if mrna_id in gene_set:
-                coords.append((mrna_id, chrom, int(start), int(end), strand))
-                # 优化：如果所有基因都找到了，就提前停止读取，省时间
-                if len(coords) == len(gene_set):
-                    break
+                # ... 下面是你原有的解析逻辑 ...
+                chrom, feature_type, start, end, strand, attributes = parts[0], parts[2], parts[3], parts[4], parts[6], parts[8]
+                
+                if feature_type != "mRNA":
+                    continue
+                    
+                attr_dict = dict(item.split("=") for item in attributes.split(";") if "=" in item)
+                mrna_id = attr_dict.get("ID", "")
+                
+                if mrna_id in gene_set:
+                    coords.append((mrna_id, chrom, int(start), int(end), strand))
+                    if len(coords) == len(gene_set):
+                        break
+    except Exception as e:
+        print(f"读取文件时发生错误: {e}")
+    
     return coords
 
 # 构建上游启动子查询
