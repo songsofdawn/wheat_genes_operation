@@ -213,10 +213,12 @@ def main():
 
         if st.button("抓取启动子序列", key="btn_promoter"):
             BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-            gff_path_default = os.path.join(BASE_DIR, "data", "Fielder.gff")
             
+            # 建议直接指向压缩包名，或者保持 Fielder.gff 也可以（因为 utils 里有兼容逻辑）
+            gff_path_default = os.path.join(BASE_DIR, "data", "Fielder.gff.gz") 
+
             if not os.path.exists(gff_path_default):
-                st.error(f"GFF 文件不存在，请检查路径: {gff_path_default}")
+                st.error(f"GFF 压缩文件不存在: {gff_path_default}")
                 st.stop()
 
             progress, status_text = st.progress(0), st.empty()

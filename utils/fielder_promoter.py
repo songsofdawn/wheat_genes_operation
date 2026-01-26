@@ -2,6 +2,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 import re
+import gzip
 
 UPSTREAM_LEN = 2000
 
@@ -14,23 +15,40 @@ def reverse_complement(seq):
 def extract_coordinates(gff_file, gene_ids):
     coords = []
     gene_set = set(gene_ids)
+    
+    # 2. 检查文件。如果传入的是 .gff 但实际存在 .gz，则自动切换
     if not os.path.exists(gff_file):
-        raise FileNotFoundError(f"GFF 文件不存在: {gff_file}")
+        if os.path.exists(gff_file + ".gz"):
+            gff_file = gff_file + ".gz"
+        else:
+            raise FileNotFoundError(f"未找到 GFF 文件: {gff_file}")
 
-    with open(gff_file, 'r', encoding='utf-8') as gff:
+    # 3. 根据文件后缀决定使用普通 open 还是 gzip.open
+    # mode='rt' 表示以“文本模式”读取，这样你拿到的 line 依然是字符串，不需要手动 decode
+    open_func = gzip.open if gff_file.endswith('.gz') else open
+    
+    with open_func(gff_file, 'rt', encoding='utf-8') as gff:
         for line in gff:
             if line.startswith("#") or not line.strip():
                 continue
             parts = line.strip().split("\t")
             if len(parts) < 9:
                 continue
+            
+            # 以下逻辑与你原来的一模一样
             chrom, feature_type, start, end, strand, attributes = parts[0], parts[2], parts[3], parts[4], parts[6], parts[8]
+            
             if feature_type != "mRNA":
                 continue
+                
             attr_dict = dict(item.split("=") for item in attributes.split(";") if "=" in item)
             mrna_id = attr_dict.get("ID", "")
+            
             if mrna_id in gene_set:
                 coords.append((mrna_id, chrom, int(start), int(end), strand))
+                # 优化：如果所有基因都找到了，就提前停止读取，省时间
+                if len(coords) == len(gene_set):
+                    break
     return coords
 
 # 构建上游启动子查询
