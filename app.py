@@ -53,8 +53,8 @@ def main():
         1. **基因功能注释及三代基因号转换**  
            因为是基于wheatomics，所以基因号不要加“ .1”。
 
-        2. **基因 cDNA & CDS 下载**  
-           上传基因号 TXT 文件（这个加不加.1无所谓），原理是基于wheatomics的GetSequence功能，可下载 cDNA 序列和 CDS 序列。
+        2. **基因 cDNA & CDS & protein下载**  
+           上传基因号 TXT 文件（这个加不加.1无所谓），原理是基于wheatomics的GetSequence功能，可下载 cDNA 序列、CDS 序列和 protein 序列。
 
         3. **中国春 → Fielder 同源基因**  
            提交 CDS 序列 BLAST，可获取 Fielder 同源基因号。
@@ -63,7 +63,7 @@ def main():
            原理为：由基因号获取基因所在坐标，然后上溯2000bp，已考虑+-链问题，所得序列方向为：设TSS为0，从左到右为-2000到-1。
 
         **免责声明：**  
-        - 请仔细核对网站结果，虽然是基于算法应该具有普适性，但是不排除代码出错
+        - 请仔细核对网站结果，虽然是基于算法应该具有普适性，但是不排除代码出错，请仔细核对。
 
         **开发人员：**
         NWAFU科研楼2303wyz；GitHub：songofdawn（项目已开源）
