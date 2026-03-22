@@ -5,7 +5,7 @@ import streamlit as st
 
 # 功能 1~4 导入
 from utils.gene_info import fetch_gene_info, translate_description, batch_process_gene_info
-from utils.sequence_fetcher import fetch_cdna_and_cds
+from utils.sequence_fetcher import fetch_cdna_cds_protein
 from utils.fasta_utils import parse_fasta
 from utils.blast_utils import submit_blast, get_blast_result
 from utils.fielder_promoter import fetch_promoter_sequences
@@ -37,7 +37,7 @@ def main():
         [
             "ReadMe",
             "基因功能注释及三代基因号转换",
-            "基因cDNA & CDS 下载",
+            "基因cDNA & CDS & protein sequences下载",
             "中国春 → Fielder 同源基因",
             "Fielder 基因 → 启动子序列",
             "中国春启动子抓取"
@@ -109,34 +109,85 @@ def main():
                 
                 status_text.empty()
                 progress_bar.empty()
-
     # -------------------- 功能 2 --------------------
-    elif tool == "基因cDNA & CDS 下载":
-        st.header("📍 cDNA & CDS 下载")
+    elif tool == "基因cDNA & CDS & protein sequences下载":
+        st.header("📍 cDNA / CDS / Protein 下载")
+
         uploaded_file = st.file_uploader("上传 TXT 文件（基因号）", type=["txt"], key="file_sequences")
         manual_input = st.text_area("或者手动输入基因号（每行一个）", key="input_sequences")
+
         gene_ids = read_gene_ids(uploaded_file, manual_input)
+
         if not gene_ids:
             st.info("请上传文件或输入基因号")
             st.stop()
-        if st.button("获取 cDNA 和 CDS", key="btn_sequences"):
-            cdna_records, cds_records, failed_genes = [], [], []
-            progress, status_text = st.progress(0), st.empty()
+
+        if st.button("获取序列（cDNA / CDS / Protein）", key="btn_sequences"):
+
+            cdna_records = []
+            cds_records = []
+            protein_records = []
+            failed_genes = []
+
+            progress = st.progress(0)
+            status_text = st.empty()
+
             for idx, gene_id in enumerate(gene_ids, 1):
+                gene_id = gene_id.strip()
                 status_text.text(f"正在处理: {gene_id} ({idx}/{len(gene_ids)})")
-                cdna_seq, cds_seq = fetch_cdna_and_cds(gene_id.strip())
+
+                cdna_seq, cds_seq, protein_seq = fetch_cdna_cds_protein(gene_id)
+
+                # ---------- cDNA ----------
                 if cdna_seq == "NA":
                     cdna_records.append(f">{gene_id}\nNA\n")
-                    cds_records.append(f">{gene_id}\nNA\n")
-                    failed_genes.append(gene_id)
                 else:
                     cdna_records.append(f">{gene_id}\n{cdna_seq}\n")
+
+                # ---------- CDS ----------
+                if cds_seq == "NA":
+                    cds_records.append(f">{gene_id}\nNA\n")
+                else:
                     cds_records.append(f">{gene_id}\n{cds_seq}\n")
+
+                # ---------- Protein ----------
+                if protein_seq == "NA":
+                    protein_records.append(f">{gene_id}\nNA\n")
+                else:
+                    protein_records.append(f">{gene_id}\n{protein_seq}\n")
+
+                # ---------- 失败判断 ----------
+                if cdna_seq == "NA" and cds_seq == "NA" and protein_seq == "NA":
+                    failed_genes.append(gene_id)
+
                 progress.progress(idx / len(gene_ids))
-            st.download_button("📥 下载 cDNA TXT", "\n".join(cdna_records), "cdna_sequences.txt", "text/plain")
-            st.download_button("📥 下载 CDS TXT", "\n".join(cds_records), "cds_sequences.txt", "text/plain")
+
+            # ---------- 下载按钮 ----------
+            st.download_button(
+                "📥 下载 cDNA FASTA",
+                "\n".join(cdna_records),
+                "cdna_sequences.fasta",
+                "text/plain"
+            )
+
+            st.download_button(
+                "📥 下载 CDS FASTA",
+                "\n".join(cds_records),
+                "cds_sequences.fasta",
+                "text/plain"
+            )
+
+            st.download_button(
+                "📥 下载 Protein FASTA ⭐",
+                "\n".join(protein_records),
+                "protein_sequences.fasta",
+                "text/plain"
+            )
+
+            # ---------- 错误提示 ----------
             if failed_genes:
                 st.warning(f"⚠️ 以下基因未获取到序列: {', '.join(failed_genes)}")
+
             status_text.empty()
 
 # -------------------- 功能 3 --------------------
