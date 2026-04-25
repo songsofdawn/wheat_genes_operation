@@ -1,0 +1,518 @@
+{
+  "source_db": "wheat_toolkit.db",
+  "source_size_mb": 2058.66,
+  "max_file_mb": 95,
+  "batch_size": 5000,
+  "tables": {
+    "cs_self_homolog_map": {
+      "strategy": "whole_table",
+      "path": "data/db/homolog/cs_self_homolog_map.db",
+      "rows": 231317,
+      "size_mb": 38.14
+    },
+    "fielder_gene_core": {
+      "strategy": "whole_table",
+      "path": "data/db/core/fielder_gene_core.db",
+      "rows": 116480,
+      "size_mb": 11.91
+    },
+    "fielder_promoter_sequence": {
+      "strategy": "by_chr",
+      "gene_column": "primary_gene_id",
+      "total_rows": 116480,
+      "shards": {
+        "1A": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_1A.db",
+          "rows": 4684,
+          "size_mb": 18.54
+        },
+        "1B": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_1B.db",
+          "rows": 4983,
+          "size_mb": 19.72
+        },
+        "1D": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_1D.db",
+          "rows": 4828,
+          "size_mb": 19.11
+        },
+        "2A": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_2A.db",
+          "rows": 6354,
+          "size_mb": 25.14
+        },
+        "2B": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_2B.db",
+          "rows": 6427,
+          "size_mb": 25.43
+        },
+        "2D": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_2D.db",
+          "rows": 6077,
+          "size_mb": 24.05
+        },
+        "3A": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_3A.db",
+          "rows": 5673,
+          "size_mb": 22.45
+        },
+        "3B": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_3B.db",
+          "rows": 6616,
+          "size_mb": 26.18
+        },
+        "3D": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_3D.db",
+          "rows": 5749,
+          "size_mb": 22.75
+        },
+        "4A": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_4A.db",
+          "rows": 5261,
+          "size_mb": 20.82
+        },
+        "4B": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_4B.db",
+          "rows": 4222,
+          "size_mb": 16.71
+        },
+        "4D": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_4D.db",
+          "rows": 4110,
+          "size_mb": 16.28
+        },
+        "5A": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_5A.db",
+          "rows": 5733,
+          "size_mb": 22.69
+        },
+        "5B": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_5B.db",
+          "rows": 5910,
+          "size_mb": 23.39
+        },
+        "5D": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_5D.db",
+          "rows": 5971,
+          "size_mb": 23.63
+        },
+        "6A": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_6A.db",
+          "rows": 4435,
+          "size_mb": 17.56
+        },
+        "6B": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_6B.db",
+          "rows": 4944,
+          "size_mb": 19.57
+        },
+        "6D": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_6D.db",
+          "rows": 4597,
+          "size_mb": 18.2
+        },
+        "7A": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_7A.db",
+          "rows": 5977,
+          "size_mb": 23.65
+        },
+        "7B": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_7B.db",
+          "rows": 5123,
+          "size_mb": 20.28
+        },
+        "7D": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_7D.db",
+          "rows": 5921,
+          "size_mb": 23.43
+        },
+        "unknown": {
+          "path": "data/db/fielder_promoter_sequence/fielder_promoter_sequence_unknown.db",
+          "rows": 2885,
+          "size_mb": 11.32
+        }
+      }
+    },
+    "gene_alias": {
+      "strategy": "whole_table",
+      "path": "data/db/core/gene_alias.db",
+      "rows": 215782,
+      "size_mb": 26.63
+    },
+    "gene_annotation": {
+      "strategy": "whole_table",
+      "path": "data/db/core/gene_annotation.db",
+      "rows": 107891,
+      "size_mb": 13.81
+    },
+    "gene_core": {
+      "strategy": "whole_table",
+      "path": "data/db/core/gene_core.db",
+      "rows": 107891,
+      "size_mb": 23.45
+    },
+    "gene_promoter_sequence": {
+      "strategy": "by_chr",
+      "gene_column": "primary_gene_id",
+      "total_rows": 107890,
+      "shards": {
+        "1A": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_1A.db",
+          "rows": 4344,
+          "size_mb": 17.14
+        },
+        "1B": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_1B.db",
+          "rows": 4714,
+          "size_mb": 18.59
+        },
+        "1D": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_1D.db",
+          "rows": 4484,
+          "size_mb": 17.69
+        },
+        "2A": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_2A.db",
+          "rows": 5797,
+          "size_mb": 22.86
+        },
+        "2B": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_2B.db",
+          "rows": 6109,
+          "size_mb": 24.09
+        },
+        "2D": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_2D.db",
+          "rows": 5865,
+          "size_mb": 23.13
+        },
+        "3A": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_3A.db",
+          "rows": 5235,
+          "size_mb": 20.65
+        },
+        "3B": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_3B.db",
+          "rows": 5905,
+          "size_mb": 23.29
+        },
+        "3D": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_3D.db",
+          "rows": 5318,
+          "size_mb": 20.97
+        },
+        "4A": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_4A.db",
+          "rows": 4861,
+          "size_mb": 19.17
+        },
+        "4B": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_4B.db",
+          "rows": 3868,
+          "size_mb": 15.26
+        },
+        "4D": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_4D.db",
+          "rows": 3579,
+          "size_mb": 14.12
+        },
+        "5A": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_5A.db",
+          "rows": 5429,
+          "size_mb": 21.41
+        },
+        "5B": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_5B.db",
+          "rows": 5576,
+          "size_mb": 21.99
+        },
+        "5D": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_5D.db",
+          "rows": 5563,
+          "size_mb": 21.94
+        },
+        "6A": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_6A.db",
+          "rows": 4127,
+          "size_mb": 16.28
+        },
+        "6B": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_6B.db",
+          "rows": 4615,
+          "size_mb": 18.2
+        },
+        "6D": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_6D.db",
+          "rows": 4004,
+          "size_mb": 15.8
+        },
+        "7A": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_7A.db",
+          "rows": 5552,
+          "size_mb": 21.89
+        },
+        "7B": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_7B.db",
+          "rows": 4855,
+          "size_mb": 19.15
+        },
+        "7D": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_7D.db",
+          "rows": 5399,
+          "size_mb": 21.29
+        },
+        "unknown": {
+          "path": "data/db/gene_promoter_sequence/gene_promoter_sequence_unknown.db",
+          "rows": 2691,
+          "size_mb": 10.62
+        }
+      }
+    },
+    "gene_sequence_resource": {
+      "strategy": "by_chr",
+      "gene_column": "primary_gene_id",
+      "total_rows": 400436,
+      "shards": {
+        "5D": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_5D.db",
+          "rows": 20631,
+          "size_mb": 32.38
+        },
+        "7A": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_7A.db",
+          "rows": 20089,
+          "size_mb": 29.99
+        },
+        "1D": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_1D.db",
+          "rows": 16656,
+          "size_mb": 25.89
+        },
+        "5A": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_5A.db",
+          "rows": 19873,
+          "size_mb": 29.57
+        },
+        "unknown": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_unknown.db",
+          "rows": 8931,
+          "size_mb": 11.16
+        },
+        "1B": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_1B.db",
+          "rows": 17391,
+          "size_mb": 27.16
+        },
+        "3A": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_3A.db",
+          "rows": 20003,
+          "size_mb": 30.57
+        },
+        "3D": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_3D.db",
+          "rows": 20658,
+          "size_mb": 32.38
+        },
+        "2D": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_2D.db",
+          "rows": 21744,
+          "size_mb": 34.5
+        },
+        "7D": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_7D.db",
+          "rows": 19804,
+          "size_mb": 30.41
+        },
+        "6B": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_6B.db",
+          "rows": 16849,
+          "size_mb": 26.16
+        },
+        "6D": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_6D.db",
+          "rows": 14864,
+          "size_mb": 23.49
+        },
+        "2B": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_2B.db",
+          "rows": 22529,
+          "size_mb": 35.54
+        },
+        "1A": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_1A.db",
+          "rows": 16035,
+          "size_mb": 24.34
+        },
+        "4B": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_4B.db",
+          "rows": 14774,
+          "size_mb": 23.43
+        },
+        "5B": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_5B.db",
+          "rows": 20615,
+          "size_mb": 32.19
+        },
+        "6A": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_6A.db",
+          "rows": 15179,
+          "size_mb": 22.95
+        },
+        "3B": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_3B.db",
+          "rows": 22103,
+          "size_mb": 33.89
+        },
+        "4D": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_4D.db",
+          "rows": 13919,
+          "size_mb": 22.29
+        },
+        "4A": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_4A.db",
+          "rows": 18159,
+          "size_mb": 28.3
+        },
+        "2A": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_2A.db",
+          "rows": 21501,
+          "size_mb": 33.16
+        },
+        "7B": {
+          "path": "data/db/gene_sequence_resource/gene_sequence_resource_7B.db",
+          "rows": 18129,
+          "size_mb": 28.15
+        }
+      }
+    },
+    "gene_structure_feature": {
+      "strategy": "by_chr",
+      "gene_column": "primary_gene_id",
+      "total_rows": 2400907,
+      "shards": {
+        "1A": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_1A.db",
+          "rows": 97990,
+          "size_mb": 15.13
+        },
+        "1B": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_1B.db",
+          "rows": 105136,
+          "size_mb": 16.25
+        },
+        "1D": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_1D.db",
+          "rows": 102149,
+          "size_mb": 15.78
+        },
+        "2A": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_2A.db",
+          "rows": 129129,
+          "size_mb": 19.95
+        },
+        "2B": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_2B.db",
+          "rows": 132959,
+          "size_mb": 20.57
+        },
+        "2D": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_2D.db",
+          "rows": 130008,
+          "size_mb": 20.1
+        },
+        "3A": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_3A.db",
+          "rows": 127173,
+          "size_mb": 19.67
+        },
+        "3B": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_3B.db",
+          "rows": 133136,
+          "size_mb": 20.6
+        },
+        "3D": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_3D.db",
+          "rows": 132619,
+          "size_mb": 20.52
+        },
+        "4A": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_4A.db",
+          "rows": 110211,
+          "size_mb": 17.03
+        },
+        "4B": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_4B.db",
+          "rows": 95330,
+          "size_mb": 14.72
+        },
+        "4D": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_4D.db",
+          "rows": 92009,
+          "size_mb": 14.19
+        },
+        "5A": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_5A.db",
+          "rows": 116916,
+          "size_mb": 18.08
+        },
+        "5B": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_5B.db",
+          "rows": 123073,
+          "size_mb": 19.06
+        },
+        "5D": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_5D.db",
+          "rows": 123639,
+          "size_mb": 19.13
+        },
+        "6A": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_6A.db",
+          "rows": 89701,
+          "size_mb": 13.83
+        },
+        "6B": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_6B.db",
+          "rows": 98052,
+          "size_mb": 15.15
+        },
+        "6D": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_6D.db",
+          "rows": 89246,
+          "size_mb": 13.77
+        },
+        "7A": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_7A.db",
+          "rows": 114770,
+          "size_mb": 17.72
+        },
+        "7B": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_7B.db",
+          "rows": 108278,
+          "size_mb": 16.73
+        },
+        "7D": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_7D.db",
+          "rows": 114978,
+          "size_mb": 17.76
+        },
+        "unknown": {
+          "path": "data/db/gene_structure_feature/gene_structure_feature_unknown.db",
+          "rows": 34405,
+          "size_mb": 5.09
+        }
+      }
+    },
+    "homolog_map": {
+      "strategy": "whole_table",
+      "path": "data/db/homolog/homolog_map.db",
+      "rows": 285782,
+      "size_mb": 51.26
+    },
+    "transcript_core": {
+      "strategy": "whole_table",
+      "path": "data/db/core/transcript_core.db",
+      "rows": 133744,
+      "size_mb": 16.17
+    }
+  }
+}

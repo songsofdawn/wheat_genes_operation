@@ -1,0 +1,24 @@
+# 原始大数据库，不上传 GitHub
+wheat_toolkit.db
+
+# SQLite 临时文件
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# Streamlit secrets
+.streamlit/secrets.toml
