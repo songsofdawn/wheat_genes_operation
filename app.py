@@ -61,8 +61,8 @@ def show_tip_box():
 
 # -------------------- 主程序 --------------------
 def main():
-    st.set_page_config(page_title="🌾 小麦基因批量处理工具", layout="wide")
-    st.title("🌾 小麦基因批量处理工具")
+    st.set_page_config(page_title="🌾 WheatGeneToolkit小麦基因批量处理工具", layout="wide")
+    st.title("🌾 WheatGeneToolkit小麦基因批量处理工具")
 
     tool = st.sidebar.radio(
         "选择功能，初次使用请阅读ReadMe",
