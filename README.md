@@ -1,23 +1,3 @@
----
-title: WheatGeneToolkit
-emoji: 🌾
-colorFrom: green
-colorTo: yellow
-sdk: docker
-app_port: 8501
-pinned: false
-license: mit
-short_description: Wheat gene toolkit for annotation and enrichment.
-tags:
-  - streamlit
-  - wheat
-  - bioinformatics
-  - genomics
-  - sqlite
-  - kegg
-  - go-enrichment
----
-
 # WheatGeneToolkit / 小麦基因批量处理工具
 
 🌾 **WheatGeneToolkit** is an integrated web-based toolkit for wheat gene annotation, gene ID conversion, sequence retrieval, homolog search, promoter extraction, and GO/KEGG enrichment analysis.
