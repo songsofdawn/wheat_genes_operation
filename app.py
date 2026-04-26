@@ -61,8 +61,8 @@ def show_tip_box():
 
 # -------------------- 主程序 --------------------
 def main():
-    st.set_page_config(page_title="🌾 WheatGeneToolkit小麦基因批量处理工具", layout="wide")
-    st.title("🌾 WheatGeneToolkit小麦基因批量处理工具")
+    st.set_page_config(page_title="🌾 小麦基因批量处理工具", layout="wide")
+    st.title("🌾 小麦基因批量处理工具")
 
     tool = st.sidebar.radio(
         "选择功能，初次使用请阅读ReadMe",
@@ -81,135 +81,465 @@ def main():
 
     # -------------------- ReadMe --------------------
     if tool == "ReadMe":
-        st.header("📖 小麦基因批量处理工具 - 使用说明")
+        st.header("📖 WheatGeneToolkit / 小麦基因批量处理工具 - 使用说明")
         st.markdown("""
-本工具面向小麦基因组相关分析，整合了**基因注释查询、基因号转换、序列下载、同源基因检索、启动子序列提取和 GO 富集分析、KEGG富集分析**等常用功能。  
+# WheatGeneToolkit / 小麦基因批量处理工具
+
+🌾 **WheatGeneToolkit** is an integrated web-based toolkit for wheat gene annotation, gene ID conversion, sequence retrieval, homolog search, promoter extraction, and GO/KEGG enrichment analysis.  
+🌾 **WheatGeneToolkit / 小麦基因批量处理工具** 是一个面向小麦功能基因组学研究的在线工具平台，集成了基因功能注释、基因号转换、序列下载、同源基因检索、启动子序列提取、GO 富集分析和 KEGG 富集分析等常用功能。
+
+The current version is built with **Streamlit** and uses a **locally partitioned SQLite database** for stable and efficient online deployment.  
+当前版本基于 **Streamlit** 构建，并采用 **本地分库 SQLite 数据库** 进行查询，避免直接加载大型数据库，更适合部署到 GitHub 和 Streamlit Cloud。
 
 ---
 
-## 功能说明
+## Main Features / 主要功能
 
-### 1. 基因功能注释及三代基因号转换
-输入中国春基因号，可获取：
-- 主键
-- 三代基因号
-- 基因功能描述（英文）
+### 1. Gene annotation and gene ID conversion / 基因功能注释及基因号转换
 
-说明：
-- 当前功能基于本地数据库查询
-- 建议输入标准中国春基因号
-- 一般不需要添加 `.1`
+Input Chinese Spring wheat gene IDs and retrieve basic annotation information.  
+输入中国春小麦基因号后，可批量获取基础注释信息。
 
-### 2. 基因 cDNA / CDS / protein sequences 下载
-输入中国春基因号后，可批量获取：
-- cDNA 序列
-- CDS 序列
-- protein 序列
+Supported outputs include / 支持输出内容包括：
 
-说明：
-- 当前序列来源于本地构建的中国春序列数据库
-- 返回结果可能包含同一基因对应的多个 transcript 序列
-- 下载文件为标准 FASTA 格式
+- Input gene ID / 输入基因号
+- Unified primary gene ID / 统一主键 `primary_gene_id`
+- Third-generation gene ID / 三代基因号
+- English functional description / 英文功能描述
+- Chinese functional description / 中文功能描述
 
-### 3. 中国春同源基因检索（自身同源 + Fielder）
-输入中国春基因号后，可同时查询：
-- 中国春自身同源基因
-- Fielder 同源基因
+This module supports local alias-based gene ID conversion. If the input gene ID is an alias or older gene ID, the program will try to map it to the unified `primary_gene_id`.  
+该模块支持基于本地 `gene_alias` 表的基因号转换。如果输入的是别名或旧版本基因号，程序会尝试自动转换为统一主键 `primary_gene_id`。
 
-说明：
-- 当前功能基于本地同源映射表，不再调用在线 BLAST
-- 默认显示**最可信的对应基因**
-- 同时保留全部候选同源基因，便于进一步人工判断
-- 同源类型包括 `RBH` 和 `SBH`，其中 `RBH` 通常可信度更高
+Example / 示例：
 
-### 4. Fielder 基因 → 启动子序列
-输入 Fielder 基因号后，可直接获取其启动子序列。
-
-说明：
-- 当前版本固定返回 **ATG 上游 2000 bp** 启动子序列
-- 已考虑正负链方向
-- 对于负链基因，输出序列已按转录方向进行反向互补处理
-- 输出序列方向统一为启动子 5'→3' 方向,也就是说,你下的序列后面跟着的就是ATG所在的序列了
-
-### 5. 中国春启动子抓取
-输入中国春基因号后，可直接获取其启动子序列,同上
-
-说明：
-- 当前版本固定返回 **ATG 上游 2000 bp** 启动子序列
-- 已考虑正负链方向
-- 对于负链基因，输出序列已按转录方向进行反向互补处理
-- 输出结果可直接下载为 FASTA 文件
-
-### 6. GO富集分析
-输入 DEG 列表（一行一个基因号），可进行 GO 富集分析，并输出：
-- 富集结果表
-- 显著结果表
-- GO 富集条形图
-- 分析摘要表
-
-说明：
-- 当前功能基于本地 GO 注释映射进行超几何检验和 BH 校正
-- 推荐输入中国春 protein-coding gene
-- 例如：`TraesCS1A02G000100`
-
-### 7. KEGG 富集分析
-
-输入 DEG 列表，一行一个基因号，可进行 KEGG 富集分析，并输出：
-
-- KEGG 富集结果总表
-- 显著富集通路表
-- KEGG 富集气泡图
-- KEGG 富集条形图
-- KEGG 分析摘要表
-
-说明：
-
-- 当前功能基于本地 KEGG 注释文件，不依赖在线 KEGG 查询
-- 使用本地 `gene-KO` 映射表将小麦基因转换为 KO 编号
-- 再根据 `KO-pathway` 映射关系统计每个通路中的 KO 富集情况
-- 富集检验使用超几何检验
-- 支持自定义 P-value 阈值
-- 支持设置最小和最大 pathway KO 数，过滤过小或过大的通路
-- 支持绘制 KEGG 气泡图和条形图
-- 推荐输入中国春基因号，例如：`TraesCS1A02G000100`
-
-## 输入建议
-
-- 基因号建议一行一个
-- 中国春基因通常使用 `TraesCS...` 格式
-- Fielder 基因通常使用 `TraesFLD...` 格式
-- 若批量上传，建议使用 TXT 文件
+```text
+TraesCS2D02G571200
+TraesCS5B02G233300
+TraesCS1A02G000100
+```
 
 ---
 
-## 注意事项
+### 2. cDNA / CDS / protein sequence retrieval / cDNA、CDS 和蛋白序列下载
 
-- 请仔细核对分析结果，本工具旨在提高批量处理效率，但不能替代人工审查
-- 同源关系结果为计算推断结果，建议结合基因结构、共线性及研究背景进一步判断
-- 启动子序列当前统一为 2000 bp 版本
-- 若输入基因号格式不规范，可能导致查询失败
+Input Chinese Spring gene IDs and retrieve transcript-related sequences.  
+输入中国春基因号后，可批量获取该基因对应转录本的序列信息。
+
+Supported sequence types / 支持的序列类型：
+
+- cDNA sequence / cDNA 序列
+- CDS sequence / CDS 序列
+- Protein sequence / 蛋白序列
+
+The output is provided in standard FASTA format. One gene may correspond to multiple transcripts.  
+输出结果为标准 FASTA 格式。同一个基因可能对应多个 transcript，因此可能返回多条序列。
 
 ---
 
-## 开发说明
+### 3. Chinese Spring self-homolog search / 中国春自身同源基因检索
 
-本工具最初用于解决小麦基因组分析中重复查询、批量下载和多平台切换的问题。  
-当前版本正在逐步从在线抓取逻辑重构为本地数据库驱动，以提高稳定性、查询速度和可维护性。
+Input Chinese Spring gene IDs and retrieve homologous genes within the Chinese Spring genome.  
+输入中国春基因号后，可查询中国春基因组内部的自身同源基因。
+
+Supported outputs include / 支持输出内容包括：
+
+- Best self-homolog hit / 最可信自身同源基因
+- All candidate self-homolog genes / 全部候选自身同源基因
+- Homolog type / 同源类型
+- Confidence / 可信度
+- Subgenome relationship / 亚基因组关系
+- Chromosome relationship / 染色体关系
+- Priority score / 优先级分数
+
+This module is useful for analyzing gene duplication, homoeologous genes, and gene family relationships in hexaploid wheat.  
+该功能适用于分析六倍体小麦中的基因复制、同源亚基因组基因和基因家族关系。
 
 ---
 
-## 开发人员
+### 4. Chinese Spring to Fielder homolog search / 中国春到 Fielder 同源基因检索
+
+Input Chinese Spring gene IDs and retrieve corresponding Fielder homologous genes.  
+输入中国春基因号后，可查询对应的 Fielder 同源基因。
+
+This function is especially useful for researchers working with Fielder as a transformation, genome editing, or functional validation background.  
+该功能特别适合以 Fielder 为遗传转化、基因编辑或功能验证背景的研究者使用。
+
+Supported outputs include / 支持输出内容包括：
+
+- Best Fielder homolog / 最可信 Fielder 同源基因
+- All candidate Fielder homologs / 全部候选 Fielder 同源基因
+- Homolog type / 同源类型
+- Confidence / 可信度
+- Same subgenome information / 是否同亚基因组
+- Same chromosome information / 是否同染色体
+- Priority score / 优先级分数
+
+---
+
+### 5. Chinese Spring promoter extraction / 中国春启动子序列提取
+
+Input Chinese Spring gene IDs and retrieve upstream promoter sequences.  
+输入中国春基因号后，可批量获取其启动子序列。
+
+Current promoter definition / 当前启动子定义：
+
+```text
+2000 bp upstream of ATG
+ATG 上游 2000 bp
+```
+
+Features / 功能特点：
+
+- Fixed promoter length of 2000 bp / 固定提取 ATG 上游 2000 bp
+- Strand-aware extraction / 考虑正负链方向
+- Reverse-complement handling for negative-strand genes / 对负链基因进行反向互补处理
+- FASTA output / 支持 FASTA 格式下载
+- Batch processing / 支持批量处理
+
+For negative-strand genes, the output sequence is reverse-complemented and presented in the transcriptional 5' to 3' direction.  
+对于负链基因，输出序列已经按照转录方向进行反向互补处理，最终结果统一为启动子 5' 到 3' 方向。也就是说，输出的启动子序列末端紧邻 ATG 所在位置。
+
+---
+
+### 6. Fielder promoter extraction / Fielder 启动子序列提取
+
+Input Fielder gene IDs and retrieve Fielder promoter sequences.  
+输入 Fielder 基因号后，可批量获取 Fielder 启动子序列。
+
+Fielder gene IDs usually follow this format / Fielder 基因号通常为如下格式：
+
+```text
+TraesFLD5B01G105200
+```
+
+Current promoter definition / 当前启动子定义：
+
+```text
+2000 bp upstream of ATG
+ATG 上游 2000 bp
+```
+
+Features / 功能特点：
+
+- Supports `TraesFLD...` gene IDs / 支持 `TraesFLD...` 格式基因号
+- Fixed promoter length of 2000 bp / 固定提取 ATG 上游 2000 bp
+- Strand-aware extraction / 考虑正负链方向
+- Reverse-complement handling for negative-strand genes / 对负链基因进行反向互补处理
+- FASTA output / 支持 FASTA 格式下载
+
+---
+
+### 7. GO enrichment analysis / GO 富集分析
+
+Input a DEG list with one gene ID per line and perform GO enrichment analysis.  
+输入差异基因列表，一行一个基因号，即可进行 GO 富集分析。
+
+The GO enrichment module outputs / GO 富集分析模块输出内容包括：
+
+- Full GO enrichment result table / GO 富集结果总表
+- Significant GO term table / 显著 GO 条目表
+- GO enrichment bar plot / GO 富集条形图
+- Analysis summary table / 分析摘要表
+
+The enrichment analysis is based on local wheat GO annotation files and uses hypergeometric testing with multiple-testing correction.  
+GO 富集分析基于本地小麦 GO 注释文件，使用超几何检验进行富集分析，并进行多重检验校正。
+
+Local GO annotation files are stored in / 本地 GO 注释文件位于：
+
+```text
+data/go_mapping/
+├── TERM2GENE_protein_coding.tsv
+├── TERM2NAME_protein_coding.tsv
+├── wheat_go_metadata.tsv
+└── wheat_protein_coding_genes.tsv
+```
+
+GO enrichment workflow / GO 富集分析流程：
+
+```text
+Input DEG list
+        ↓
+Map genes to GO terms
+        ↓
+Filter GO terms by gene set size
+        ↓
+Hypergeometric enrichment test
+        ↓
+Multiple-testing correction
+        ↓
+Output result tables and bar plot
+```
+
+```text
+输入差异基因列表
+        ↓
+将基因映射到 GO 条目
+        ↓
+按照基因集大小过滤 GO 条目
+        ↓
+进行超几何检验
+        ↓
+进行多重检验校正
+        ↓
+输出富集结果表和条形图
+```
+
+Notes / 注意事项：
+
+- GO enrichment results depend on the completeness of the local GO annotation.  
+  GO 富集结果依赖本地 GO 注释文件的完整性。
+- Genes without GO annotation will not contribute to GO enrichment testing.  
+  没有 GO 注释的基因不会进入 GO 富集检验。
+- Enrichment results indicate over-representation of GO terms, not direct biological causality.  
+  富集结果只能说明某些 GO 条目在输入基因集中显著偏多，不能直接证明因果关系。
+
+---
+
+### 8. KEGG enrichment analysis / KEGG 富集分析
+
+Input a DEG list with one gene ID per line and perform KEGG pathway enrichment analysis.  
+输入差异基因列表，一行一个基因号，即可进行 KEGG 通路富集分析。
+
+The KEGG enrichment module outputs / KEGG 富集分析模块输出内容包括：
+
+- Full KEGG enrichment result table / KEGG 富集结果总表
+- Significant pathway table / 显著通路结果表
+- KEGG bubble plot / KEGG 富集气泡图
+- KEGG bar plot / KEGG 富集条形图
+- Analysis summary table / KEGG 分析摘要表
+
+This module is based on local gene-KO and KO-pathway mapping files. It does not depend on online KEGG queries during analysis.  
+该模块基于本地 gene-KO 和 KO-pathway 映射文件进行分析，运行时不依赖在线 KEGG 查询。
+
+Local KEGG files are stored in / 本地 KEGG 注释文件位于：
+
+```text
+data/kegg_mapping/
+├── gene2ko_clean.tsv
+├── kegg_ko2pathway.tsv
+└── kegg_pathway2name.tsv
+```
+
+File descriptions / 文件说明：
+
+**`gene2ko_clean.tsv`**  
+Mapping between wheat genes and KEGG Orthology identifiers.  
+小麦基因与 KEGG Orthology，也就是 KO 编号之间的映射表。
+
+Example / 示例：
+
+```text
+TraesCS1A02G000100    K00001
+TraesCS1A02G000200    K14488
+```
+
+**`kegg_ko2pathway.tsv`**  
+Mapping between KO identifiers and KEGG pathway IDs.  
+KO 编号与 KEGG pathway 编号之间的映射表。
+
+Example / 示例：
+
+```text
+K00001    map00010
+K14488    map04075
+```
+
+**`kegg_pathway2name.tsv`**  
+Mapping between KEGG pathway IDs and pathway names.  
+KEGG pathway 编号与通路名称之间的映射表。
+
+Example / 示例：
+
+```text
+map00010    Glycolysis / Gluconeogenesis
+map04075    Plant hormone signal transduction
+```
+
+KEGG enrichment workflow / KEGG 富集分析流程：
+
+```text
+Input DEG list
+        ↓
+Map wheat genes to KO identifiers
+        ↓
+Map KO identifiers to KEGG pathways
+        ↓
+Count pathway-level KO hits
+        ↓
+Perform hypergeometric enrichment test
+        ↓
+Output enrichment tables, bubble plot, and bar plot
+```
+
+```text
+输入差异基因列表
+        ↓
+将小麦基因映射到 KO 编号
+        ↓
+将 KO 编号映射到 KEGG pathway
+        ↓
+统计每个 pathway 中被命中的 KO 数量
+        ↓
+进行超几何富集检验
+        ↓
+输出富集结果表、气泡图和条形图
+```
+
+Common output fields / 常见输出字段说明：
+
+| Field | English description | 中文说明 |
+|---|---|---|
+| pathway_id | KEGG pathway ID | KEGG 通路编号 |
+| pathway_name | KEGG pathway name | KEGG 通路名称 |
+| k | Number of input KOs mapped to this pathway | 输入基因对应 KO 中命中该通路的 KO 数 |
+| K | Number of background KOs in this pathway | 背景 KO 中属于该通路的 KO 数 |
+| n | Number of input KOs used for enrichment | 输入基因中成功映射到 KO 的数量 |
+| N | Number of background KOs used for enrichment | 背景中可用于分析的 KO 总数 |
+| pvalue | P-value from hypergeometric test | 超几何检验得到的 P 值 |
+| gene_ratio | Ratio of input KOs mapped to this pathway | 输入 KO 中命中该通路的比例 |
+| background_ratio | Ratio of background KOs in this pathway | 背景 KO 中属于该通路的比例 |
+| hit_ko | KO identifiers mapped to this pathway | 命中该通路的 KO 编号 |
+| hit_genes | Input genes mapped to this pathway | 命中该通路的输入基因 |
+
+Notes / 注意事项：
+
+- KEGG enrichment is performed at the KO level rather than directly at the raw gene ID level.  
+  KEGG 富集是在 KO 层面进行统计，而不是直接按原始基因号统计。
+- Genes without KO annotation will be excluded from KEGG enrichment testing.  
+  没有 KO 注释的基因不会进入 KEGG 富集检验。
+- One gene may correspond to one or more KO identifiers.  
+  一个基因可能对应一个或多个 KO 编号。
+- One KO identifier may participate in multiple KEGG pathways.  
+  一个 KO 编号也可能参与多个 KEGG pathway。
+- KEGG enrichment indicates over-representation of pathways among input genes.  
+  KEGG 富集结果说明某些通路在输入基因对应的 KO 中显著偏多。
+- KEGG enrichment does not directly indicate whether a pathway is activated or repressed.  
+  KEGG 富集结果不能直接说明通路被激活或被抑制。
+- To infer pathway activation or repression, RNA-seq fold-change direction, expression pattern, and biological context should be considered together.  
+  如果需要判断通路上调或下调，需要结合 RNA-seq 的 log2FoldChange、表达趋势和具体生物学背景进一步解释。
+
+---
+
+## Database Design / 数据库设计
+
+The original large SQLite database has been partitioned into multiple smaller query-ready SQLite databases.  
+原始大型 SQLite 数据库已经被拆分为多个可以直接查询的小型 SQLite 数据库。
+
+This design avoids loading, merging, or decompressing a large database during web app startup.  
+这种设计避免了网站启动时加载、合并或解压大型数据库，从而更适合 GitHub 和 Streamlit Cloud 部署。
+
+Current database structure / 当前数据库结构：
+
+```text
+data/db/
+├── manifest.json
+├── core/
+│   ├── fielder_gene_core.db
+│   ├── gene_alias.db
+│   ├── gene_annotation.db
+│   ├── gene_core.db
+│   └── transcript_core.db
+│
+├── gene_sequence_resource/
+│   ├── gene_sequence_resource_1A.db
+│   ├── gene_sequence_resource_1B.db
+│   ├── gene_sequence_resource_1D.db
+│   ├── ...
+│   └── gene_sequence_resource_unknown.db
+│
+├── gene_promoter_sequence/
+│   ├── gene_promoter_sequence_1A.db
+│   ├── gene_promoter_sequence_1B.db
+│   ├── gene_promoter_sequence_1D.db
+│   ├── ...
+│   └── gene_promoter_sequence_unknown.db
+│
+├── fielder_promoter_sequence/
+│   ├── fielder_promoter_sequence_1A.db
+│   ├── fielder_promoter_sequence_1B.db
+│   ├── fielder_promoter_sequence_1D.db
+│   ├── ...
+│   └── fielder_promoter_sequence_unknown.db
+│
+├── gene_structure_feature/
+│   ├── gene_structure_feature_1A.db
+│   ├── gene_structure_feature_1B.db
+│   ├── gene_structure_feature_1D.db
+│   ├── ...
+│   └── gene_structure_feature_unknown.db
+│
+└── homolog/
+    ├── cs_self_homolog_map.db
+    └── homolog_map.db
+```
+
+The `manifest.json` file records how each table is stored and how each SQLite shard should be located.  
+`manifest.json` 文件记录了每张表的存储方式以及每个 SQLite 分库的位置。
+
+During query execution, the program automatically identifies the chromosome from the gene ID.  
+查询时，程序会自动从基因号中识别染色体。
+
+Example / 示例：
+
+```text
+TraesCS5B02G233300 → 5B
+TraesFLD5B01G105200 → 5B
+```
+
+Then the program opens only the corresponding small SQLite database.  
+然后程序只打开对应染色体的小型 SQLite 数据库进行查询。
+
+---
+
+## Input Suggestions / 输入建议
+
+- Use one gene ID per line.  
+  建议每行输入一个基因号。
+- Chinese Spring genes usually follow the `TraesCS...` format.  
+  中国春基因通常使用 `TraesCS...` 格式。
+- Fielder genes usually follow the `TraesFLD...` format.  
+  Fielder 基因通常使用 `TraesFLD...` 格式。
+- For batch analysis, uploading a TXT file is recommended.  
+  批量分析时，推荐上传 TXT 文件。
+- Transcript suffixes such as `.1` and `.2` are generally not required.  
+  一般不需要添加 `.1`、`.2` 等 transcript 后缀。
+
+---
+
+## Notes / 注意事项
+
+- This tool is designed for wheat gene list processing and functional genomics analysis.  
+  本工具主要用于小麦基因列表处理和功能基因组学分析。
+- The current promoter definition is fixed as 2000 bp upstream of ATG.  
+  当前启动子定义固定为 ATG 上游 2000 bp。
+- Homolog relationships are computationally inferred and should be interpreted with caution.  
+  同源关系为计算推断结果，应谨慎解释。
+- GO enrichment results depend on the quality and completeness of local GO annotation files.  
+  GO 富集结果依赖本地 GO 注释文件的质量和完整性。
+- KEGG enrichment results depend on the quality and completeness of local gene-KO and KO-pathway mapping files.  
+  KEGG 富集结果依赖本地 gene-KO 和 KO-pathway 映射文件的质量和完整性。
+- Enrichment results should be interpreted together with biological knowledge and experimental validation.  
+  富集分析结果应结合生物学知识和实验验证进行综合判断。
+
+---
+
+## Developer / 开发人员
 
 NWAFU 科研楼 2303 wyz  
-GitHub：songofdawn
+GitHub: songsofdawn
 
 ---
 
-## 免责声明
+## Disclaimer / 免责声明
 
-本工具结果仅供科研参考，请结合原始数据库、文献证据及具体研究背景进行综合判断。
+WheatGeneToolkit is provided for research use only.  
+WheatGeneToolkit 仅供科研使用。
+
+The results generated by this platform should be interpreted together with original genome annotations, literature evidence, experimental data, and biological context.  
+本平台生成的结果应结合原始基因组注释、文献证据、实验数据和具体生物学背景进行综合判断。
         """)
-        st.info("📌 请从左侧选择功能开始使用")
+        st.info("📌 请从左侧选择功能开始使用 / Please select a function from the sidebar to get started.")
         return
 
     # -------------------- 功能 1 --------------------
