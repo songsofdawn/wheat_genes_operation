@@ -7,7 +7,7 @@ sdk: docker
 app_port: 8501
 pinned: false
 license: mit
-short_description: A Streamlit-based wheat gene annotation, sequence, promoter, homology, GO and KEGG analysis toolkit.
+short_description: Wheat gene toolkit for annotation and enrichment.
 tags:
   - streamlit
   - wheat
