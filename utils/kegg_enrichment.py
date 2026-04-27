@@ -610,7 +610,7 @@ def create_kegg_bubbleplot_bytes(
         title="Input\nnumber",
         frameon=False,
         loc="center",
-        bbox_to_anchor=(0.5, 0.5),
+        bbox_to_anchor=(0.82, 0.5),
         scatterpoints=1,
         labelspacing=1.0,
         borderpad=0.2,
