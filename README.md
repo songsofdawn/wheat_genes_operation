@@ -1159,22 +1159,22 @@ databases in `data/`. Major sources include:
 
 本软件协议**不适用于** `data/` 中的第三方生物学数据及其衍生数据库。主要来源包括：
 
-- Chinese Spring genome and annotation: IWGSC RefSeq v1.1 ([Ref. 1](REFERENCES.md#ref-1)) / 中国春基因组与注释：IWGSC RefSeq v1.1
-- Fielder genome: Sato et al. 2021, NCBI `GCA_907166925.1` ([Ref. 2](REFERENCES.md#ref-2)) / Fielder 基因组
-- Homology relationships: Triticeae-GeneTribe (TGT), China Agricultural University ([Ref. 3](REFERENCES.md#ref-3)) / 同源关系：农大 TGT
-- Functional annotation and gene-ID conversion: WheatOmics 1.0 ([Ref. 4](REFERENCES.md#ref-4)) / 功能注释与三代基因号转换：WheatOmics
-- Plant TF motifs: JASPAR 2026 CORE Plants, CC BY 4.0 ([Ref. 5](REFERENCES.md#ref-5)) / 启动子 motif：JASPAR
-- GO mappings: Ensembl Plants BioMart and Gene Ontology ([Refs. 6-9](REFERENCES.md#ref-6)) / GO：Ensembl Plants BioMart
-- KO and pathway mappings: KEGG BlastKOALA and KEGG ([Refs. 10-11](REFERENCES.md#ref-10)) / KEGG：BlastKOALA 与 KEGG
+- Chinese Spring genome and annotation: IWGSC RefSeq v1.1 ([Ref. 1](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/REFERENCES.md#ref-1)) / 中国春基因组与注释：IWGSC RefSeq v1.1
+- Fielder genome: Sato et al. 2021, NCBI `GCA_907166925.1` ([Ref. 2](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/REFERENCES.md#ref-2)) / Fielder 基因组
+- Homology relationships: Triticeae-GeneTribe (TGT), China Agricultural University ([Ref. 3](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/REFERENCES.md#ref-3)) / 同源关系：农大 TGT
+- Functional annotation and gene-ID conversion: WheatOmics 1.0 ([Ref. 4](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/REFERENCES.md#ref-4)) / 功能注释与三代基因号转换：WheatOmics
+- Plant TF motifs: JASPAR 2026 CORE Plants, CC BY 4.0 ([Ref. 5](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/REFERENCES.md#ref-5)) / 启动子 motif：JASPAR
+- GO mappings: Ensembl Plants BioMart and Gene Ontology ([Refs. 6-9](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/REFERENCES.md#ref-6)) / GO：Ensembl Plants BioMart
+- KO and pathway mappings: KEGG BlastKOALA and KEGG ([Refs. 10-11](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/REFERENCES.md#ref-10)) / KEGG：BlastKOALA 与 KEGG
 
-See [LICENSE](LICENSE), [NOTICE](NOTICE), [THIRD_PARTY_DATA.md](THIRD_PARTY_DATA.md),
-and [REFERENCES.md](REFERENCES.md) for the complete scope, citations,
+See [LICENSE](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/LICENSE), [NOTICE](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/NOTICE), [THIRD_PARTY_DATA.md](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/THIRD_PARTY_DATA.md),
+and [REFERENCES.md](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/REFERENCES.md) for the complete scope, citations,
 attribution requirements and upstream restrictions. In particular, KEGG-derived data
 are not covered by Apache-2.0 and may require a separate KEGG licence for service
 provision, redistribution or non-academic use.
 
-完整的适用范围、文献引用、署名要求及上游限制见 [LICENSE](LICENSE)、[NOTICE](NOTICE)、
-[THIRD_PARTY_DATA.md](THIRD_PARTY_DATA.md) 和 [REFERENCES.md](REFERENCES.md)。特别注意：KEGG 衍生数据不属于
+完整的适用范围、文献引用、署名要求及上游限制见 [LICENSE](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/LICENSE)、[NOTICE](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/NOTICE)、
+[THIRD_PARTY_DATA.md](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/THIRD_PARTY_DATA.md) 和 [REFERENCES.md](https://github.com/songsofdawn/WheatGeneToolkit/blob/main/REFERENCES.md)。特别注意：KEGG 衍生数据不属于
 Apache-2.0 授权范围，公开服务、再分发或非学术使用可能需要另行取得 KEGG 授权。
 
 ---
